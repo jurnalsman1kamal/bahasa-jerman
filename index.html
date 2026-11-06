@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Media Pembelajaran Interaktif</title>
+<style>
+:root{
+  --bg:#f4f7fb; --kartu:#ffffff; --teks:#1d2433; --redup:#5b667a; --garis:#dde3ee;
+  --utama:#3b6cf6; --utama-gelap:#2850d0; --aksen:#ffb020; --ok:#16a34a; --okbg:#e8f8ee;
+  --no:#dc2626; --nobg:#fdecec; --info:#0b6bcb; --infobg:#e8f2fd;
+  --r:14px; --fs:16px; --bayang:0 2px 10px rgba(30,45,90,.08);
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#10151f; --kartu:#1a2231; --teks:#e8edf7; --redup:#9aa6bd; --garis:#2c3750;
+    --utama:#6c92ff; --utama-gelap:#4f78f0; --okbg:#12301f; --nobg:#3a1b1b; --infobg:#12263d;
+    --ok:#4ade80; --no:#f87171; --info:#6cb4ff; --bayang:none;
+  }
+}
+/* Tema per jenjang: sd = ceria & besar, smp = dinamis, sma = bersih & formal */
+body[data-tema="sd"]{--r:24px;--fs:18px;--utama:#ff6b4a;--utama-gelap:#e0502f;--aksen:#ffc933;--bg:#fff7ec}
+body[data-tema="smp"]{--r:16px;--fs:16.5px}
+body[data-tema="sma"]{--r:10px;--fs:16px;--utama:#0f766e;--utama-gelap:#0b5c56;--bg:#f3f6f6}
+@media (prefers-color-scheme:dark){
+  body[data-tema="sd"]{--bg:#1d1710;--utama:#ff8a6e}
+  body[data-tema="sma"]{--bg:#0f1716;--utama:#2dd4bf}
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--teks);font:var(--fs)/1.6 ui-rounded,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;min-height:100%}
+header{background:var(--utama);color:#fff;padding:12px 16px 10px;position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.hd{display:flex;align-items:center;gap:10px;max-width:920px;margin:0 auto}
+.hd .mas{font-size:1.8em}
+.hd h1{font-size:1.05em;margin:0;line-height:1.25;flex:1}
+.hd small{display:block;font-weight:400;opacity:.9;font-size:.78em}
+.poin{background:rgba(255,255,255,.2);padding:4px 10px;border-radius:99px;font-weight:700;white-space:nowrap}
+.prog{max-width:920px;margin:8px auto 0;height:8px;background:rgba(255,255,255,.3);border-radius:9px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--aksen);transition:width .4s}
+nav{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;max-width:920px;margin:0 auto;scrollbar-width:thin}
+nav button{flex:0 0 auto;border:1px solid var(--garis);background:var(--kartu);color:var(--teks);border-radius:99px;padding:8px 14px;min-height:44px;font:inherit;font-size:.88em;cursor:pointer;white-space:nowrap}
+nav button[aria-current="true"]{background:var(--utama);color:#fff;border-color:var(--utama)}
+nav button.done::after{content:" ✓";font-weight:700}
+main{max-width:920px;margin:0 auto;padding:6px 14px 20px}
+.card{background:var(--kartu);border:1px solid var(--garis);border-radius:var(--r);padding:16px 18px;margin:12px 0;box-shadow:var(--bayang)}
+.card h2,.card h3{margin:.1em 0 .4em;line-height:1.3}
+h2{font-size:1.25em} h3{font-size:1.05em}
+.hero{text-align:center;padding:26px 18px}
+.hero .big{font-size:3.4em;animation:goyang 3s ease-in-out infinite}
+@keyframes goyang{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+.chip-info{display:inline-block;background:var(--infobg);color:var(--info);border-radius:99px;padding:2px 12px;margin:3px;font-size:.82em}
+.btn{background:var(--utama);color:#fff;border:0;border-radius:99px;padding:11px 22px;min-height:44px;font:inherit;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--utama-gelap)} .btn.sek{background:transparent;color:var(--utama);border:2px solid var(--utama)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.soal .t{font-weight:600;margin:0 0 10px}
+.opsi{display:grid;gap:8px}
+.pilih,.chip,.kartu-m,.kel{border:2px solid var(--garis);background:var(--kartu);color:var(--teks);border-radius:12px;padding:10px 14px;min-height:44px;font:inherit;text-align:left;cursor:pointer}
+.pilih:hover:not([disabled]),.chip:hover:not([disabled]){border-color:var(--utama)}
+.pilih.benar,.cocok{border-color:var(--ok)!important;background:var(--okbg)!important}
+.pilih.salah{border-color:var(--no);background:var(--nobg)}
+.pilih[disabled]:not(.benar):not(.salah){opacity:.7}
+.fb{margin-top:10px;padding:10px 14px;border-radius:12px;font-size:.95em}
+.fb.ok{background:var(--okbg);color:var(--ok)} .fb.no{background:var(--nobg);color:var(--no)} .fb.info{background:var(--infobg);color:var(--info)}
+.fb b{color:inherit}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{padding:8px 14px;text-align:center} .chip.pil{border-color:var(--utama);background:var(--infobg)}
+ol.urutan{margin:6px 0;padding-left:1.4em;min-height:1.6em}
+input[type=text],textarea{width:100%;font:inherit;padding:10px 12px;border:2px solid var(--garis);border-radius:12px;background:var(--kartu);color:var(--teks)}
+input[type=text]:focus,textarea:focus{outline:none;border-color:var(--utama)}
+.baris{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dua{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid-m{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.kartu-m{min-height:72px;text-align:center;font-size:.9em}
+.kartu-m.buka{background:var(--infobg);border-color:var(--info)}
+.kel{text-align:center;font-weight:700;border-style:dashed}
+.sim .out{text-align:center;font-size:1.1em;margin:10px 0;min-height:4.2em}
+.sim .out .em{font-size:2.6em;display:block}
+.bar{height:14px;background:var(--garis);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--utama);transition:width .25s}
+input[type=range]{width:100%;accent-color:var(--utama);height:34px}
+.lencana-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.lencana{text-align:center;padding:14px 8px;border-radius:var(--r);border:2px dashed var(--garis);filter:grayscale(1);opacity:.6}
+.lencana.dapat{filter:none;opacity:1;border:2px solid var(--aksen);background:var(--kartu);animation:muncul .5s}
+.lencana .ik{font-size:2.2em;display:block}
+@keyframes muncul{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+.sert{border:6px double var(--aksen);background:var(--kartu);text-align:center;padding:24px 14px;border-radius:var(--r)}
+.sert .nm{font-size:1.5em;font-weight:800;color:var(--utama);margin:6px 0;min-height:1.6em;overflow-wrap:anywhere}
+.tbl{width:100%;overflow-x:auto}
+.baris-p{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--garis)}
+.baris-p:last-child{border:0} .baris-p .nm{flex:1}
+.emo{display:flex;gap:10px;font-size:1.9em}
+.emo button{background:none;border:2px solid transparent;border-radius:14px;padding:4px 10px;min-height:44px;cursor:pointer;font:inherit}
+.emo button.pil{border-color:var(--utama);background:var(--infobg)}
+#pager{max-width:920px;margin:0 auto;padding:0 14px 28px;display:flex;justify-content:space-between;gap:10px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translate(-50%,30px);background:#1d2433;color:#fff;padding:8px 18px;border-radius:99px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+.muted{color:var(--redup)}
+.goyang{animation:getar .3s}
+@keyframes getar{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@media (max-width:480px){.dua{grid-template-columns:1fr 1fr;gap:8px} .card{padding:14px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media print{header,nav,#pager,#toast,.noprint{display:none!important} body{background:#fff} .sert{break-inside:avoid}}
+.say{cursor:pointer;border:1px solid var(--garis);background:var(--kartu);color:var(--teks);border-radius:999px;padding:2px 10px;margin-left:4px;font:inherit;min-height:32px}.say:hover{border-color:var(--utama)}
+/* Tema solid bendera Jerman: hitam, merah, emas */
+body[data-tema="sma"]{--bg:#FFFBEA;--kartu:#FFFFFF;--teks:#1A1A1A;--redup:#5C5C5C;--garis:#E0D6B0;--utama:#C80000;--utama-gelap:#9E0000;--aksen:#FFCE00;--ok:#1B7F3A;--okbg:#E3F5E8;--no:#B00020;--nobg:#FDE7EA;--info:#1A1A1A;--infobg:#FFF3C4}
+@media(prefers-color-scheme:dark){body[data-tema="sma"]{--bg:#121212;--kartu:#1E1E1E;--teks:#F5F5F5;--redup:#B5B5B5;--garis:#3A3A3A;--utama:#D32F2F;--utama-gelap:#B71C1C;--aksen:#FFCE00;--ok:#6fd58c;--okbg:#143D22;--no:#ff8a9a;--nobg:#4A1520;--info:#FFCE00;--infobg:#3A3000}}
+body[data-tema="sma"] header{background:#141414;color:#fff;border-bottom:5px solid #DD0000;position:sticky}
+body[data-tema="sma"] header::after{content:"";position:absolute;left:0;right:0;bottom:-10px;height:5px;background:#FFCE00}
+body[data-tema="sma"] #pbar{background:#FFCE00}
+body[data-tema="sma"] .card{border-top:4px solid #FFCE00}
+body[data-tema="sma"] code{background:var(--infobg);color:var(--teks);padding:1px 6px;border-radius:6px}
+.hd img.mas{height:46px;width:auto;background:#fff;border-radius:8px;padding:2px;flex:none}
+#guru{display:block;font-size:.8em;font-weight:600;color:#FFCE00}
+</style>
+</head>
+<body data-tema="sma">
+<header>
+  <div class="hd">
+    <img class="mas" id="mas" alt="Logo SMA Negeri 1 Kamal" src="data:image/jpeg;base64,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">
+    <h1 id="jdl">Media Pembelajaran<small id="sub"></small><small id="guru">Yesi · Guru Bahasa Jerman</small></h1>
+    <span class="poin" id="poin" aria-label="Poin">⭐ 0</span>
+  </div>
+  <div class="prog" role="progressbar" aria-label="Progres belajar" aria-valuemin="0" aria-valuemax="100"><i id="pbar"></i></div>
+</header>
+<nav id="nav" aria-label="Bagian pembelajaran"></nav>
+<main id="main" tabindex="-1"></main>
+<div id="pager"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* DATA konten pembelajaran */
+const DATA = {
+  meta:{ judul:"Meine Familie: Sich vorstellen", mapel:"Bahasa Jerman", jenjang:"SMA", kelas:"11 (Fase F)", materi:"Sich vorstellen & Personen beschreiben", subMateri:"Perkenalan diri, anggota keluarga, dan deskripsi orang", tema:"sma", maskot:"🇩🇪" },
+  apersepsi:{ ikon:"🇩🇪", pertanyaan:"Minggu depan murid pertukaran dari Hamburg duduk di sebelahmu dan bertanya: „Wer ist in deiner Familie?“ Apa yang akan kamu katakan?", cerita:"Jonas, siswa dari Hamburg, baru tiba di kelasmu. Ia belum bisa bahasa Indonesia, tetapi sangat ingin tahu siapa kamu dan keluargamu. Dalam satu sesi ini kamu akan belajar memperkenalkan diri, menyebut anggota keluarga, menggambarkan mereka, dan menyusun Stammbaum (silsilah) yang bisa kamu tunjukkan padanya. Tekan tombol 🔊 untuk mendengar pelafalan." },
+  tujuan:[
+    { tp:"TP1", ikon:"🌳", teks:"Kamu bisa menyebut anggota keluarga dalam bahasa Jerman dan menyusun silsilah (Familienstammbaum), lisan maupun tulisan." },
+    { tp:"TP2", ikon:"👂", teks:"Kamu bisa menangkap informasi umum dan rinci dari teks sederhana tentang keluarga dan perkenalan diri (Hören & Lesen)." },
+    { tp:"TP3", ikon:"🗣️", teks:"Kamu bisa menyusun dialog, monolog, atau deskripsi singkat tentang dirimu dan keluargamu (Sprechen & Schreiben)." },
+    { tp:"TP4", ikon:"🧩", teks:"Kamu bisa memakai Artikel (der/die/das, ein/eine) dan Fragewörter (Wer? Wie? Woher?) dengan tepat pada kasus Nominativ." }
+  ],
+  materi:[
+    { judul:"Sich vorstellen: memperkenalkan diri", ikon:"👋", isi:"<code>Ich heiße Anna.</code> <button type=\"button\" class=\"say\" data-say=\"Ich heiße Anna.\" aria-label=\"Dengarkan\">🔊</button> (Nama saya Anna.)<br><code>Ich komme aus Indonesien.</code> <button type=\"button\" class=\"say\" data-say=\"Ich komme aus Indonesien.\" aria-label=\"Dengarkan\">🔊</button><br><code>Ich wohne in Bandung.</code> · <code>Ich bin 16 Jahre alt.</code><br>Pertanyaannya: <b>Wie heißt du? Woher kommst du? Wo wohnst du? Wie alt bist du?</b>",
+      cek:{ tipe:"pg", t:"Jawaban yang tepat untuk „Woher kommst du?“ adalah …", opsi:["Ich komme aus Indonesien.","Ich heiße Indonesien.","Ich wohne zwanzig Jahre."], kunci:0, jelas:"Woher = dari mana, jadi dijawab dengan komm- + aus + asal.", petunjuk:"Woher bertanya tentang asal." } },
+    { judul:"Die Familie: anggota keluarga", ikon:"👨‍👩‍👧", isi:"<b>der</b> Vater (ayah) · <b>die</b> Mutter (ibu) · <b>der</b> Bruder · <b>die</b> Schwester · <b>der</b> Großvater/Opa · <b>die</b> Großmutter/Oma · <b>das</b> Kind (anak) · <b>der</b> Onkel (paman) · <b>die</b> Tante (bibi) · <b>die</b> Eltern (orang tua) · <b>die</b> Geschwister (saudara kandung). Kepemilikan: <code>mein Vater</code>, <code>meine Mutter</code>. <button type=\"button\" class=\"say\" data-say=\"Das ist mein Vater. Das ist meine Mutter.\" aria-label=\"Dengarkan\">🔊</button>",
+      cek:{ tipe:"isian", t:"Lengkapi: Das ist ___ Mutter. (mein / meine)", kunci:["meine"], jelas:"Mutter berartikel die (feminin), maka memakai meine.", petunjuk:"die Mutter → bentuk feminin." } },
+    { judul:"Personen beschreiben: sifat dan ciri", ikon:"🧑", isi:"<b>groß</b> (tinggi) ↔ <b>klein</b> (pendek) · <b>alt</b> (tua) ↔ <b>jung</b> (muda) · <b>nett</b> (baik) · <b>lustig</b> (lucu) · <b>sportlich</b> · <b>freundlich</b> (ramah). Rumus: orang + <code>sein</code> + sifat. <code>Er ist groß.</code> <code>Sie ist nett.</code> <code>Wir sind jung.</code> (ich bin · du bist · er/sie ist · wir sind · ihr seid · sie sind) <button type=\"button\" class=\"say\" data-say=\"Er ist groß. Sie ist nett.\" aria-label=\"Dengarkan\">🔊</button>",
+      cek:{ tipe:"pg", t:"Meine Oma ___ alt.", opsi:["ist","bin","sind"], kunci:0, jelas:"Subjek orang ketiga tunggal (sie) memakai ist.", petunjuk:"er/sie/es → ist." } },
+    { judul:"Artikel dan Fragewörter (Nominativ)", ikon:"🧩", isi:"<b>Bestimmt</b>: der Vater, die Mutter, das Kind, die Eltern. <b>Unbestimmt</b>: ein Vater, eine Mutter, ein Kind. Fragewörter: <b>Wer</b> (siapa, untuk orang), <b>Was</b> (apa, untuk benda), <b>Wie</b> (bagaimana), <b>Woher</b> (dari mana), <b>Wo</b> (di mana). Contoh: <code>Wer ist das? – Das ist mein Bruder.</code>",
+      cek:{ tipe:"pg", t:"___ ist das? – Das ist meine Schwester.", opsi:["Wer","Was","Wo"], kunci:0, jelas:"Menanyakan orang memakai Wer.", petunjuk:"Jawabannya seorang saudari, yaitu orang." } }
+  ],
+  eksplorasi:{ judul:"Detektif Wortschatz", instruksi:"Pasangkan kata Jerman dengan artinya, lalu temukan aturan tentang kata sifat. Ketuk kiri, lalu kanan.",
+    soal:[
+      { tipe:"jodoh", t:"Jodohkan kata Jerman dan artinya", pasang:[["der Großvater","kakek"],["die Großmutter","nenek"],["die Geschwister","saudara kandung"],["die Eltern","orang tua"]], jelas:"Eltern dan Geschwister selalu bentuk jamak (die).", petunjuk:"Groß = besar, Mutter/Vater = ibu/ayah." },
+      { tipe:"pg", t:"Er ist nett. Sie ist nett. Wir sind nett. Apa yang kamu amati tentang kata nett?", opsi:["Tidak berubah bentuk setelah sein","Berubah sesuai jenis kelamin","Selalu menjadi nette"], kunci:0, jelas:"Kata sifat setelah sein tidak berubah, hanya sein yang berubah mengikuti subjek.", petunjuk:"Bandingkan ujung kata nett di tiga kalimat." }
+    ],
+    kesimpulan:"Orang + sein + sifat. Sifat tidak berubah, sein yang menyesuaikan subjek (ist/sind). Artikel mengikuti jenis kata: der, die, das." },
+  lab:{ judul:"Stammbaum-Werkstatt: Generator Deskripsi", ikon:"🌳", label:"Stammbaum-Werkstatt", instruksi:"Geser slider untuk memilih anggota keluarga dan cirinya. Bengkel menyusun kalimat Jerman beserta artinya. Geser minimal 3 kali lalu jawab tantangan.",
+    kontrol:[ {id:"p",label:"Person (1 Vater · 2 Mutter · 3 Bruder · 4 Schwester · 5 Opa · 6 Oma)",min:1,max:6,step:1,nilai:2}, {id:"g",label:"Größe (1 klein · 2 mittelgroß · 3 groß)",min:1,max:3,step:1,nilai:3}, {id:"a",label:"Alter (1 jung · 2 alt)",min:1,max:2,step:1,nilai:1}, {id:"c",label:"Charakter (1 nett · 2 lustig · 3 sportlich · 4 freundlich)",min:1,max:4,step:1,nilai:1} ],
+    hitung:(v)=>{
+      const P=[["Vater","mein","Er","ayah","👨"],["Mutter","meine","Sie","ibu","👩"],["Bruder","mein","Er","saudara laki-laki","👦"],["Schwester","meine","Sie","saudara perempuan","👧"],["Opa","mein","Er","kakek","👴"],["Oma","meine","Sie","nenek","👵"]][v.p-1];
+      const G=["klein","mittelgroß","groß"],GI=["pendek","sedang","tinggi"],A=["jung","alt"],AI=["muda","tua"],C=["nett","lustig","sportlich","freundlich"],CI=["baik","lucu","sporty","ramah"];
+      const de="Das ist "+P[1]+" "+P[0]+". "+P[2]+" ist "+G[v.g-1]+" und "+A[v.a-1]+". "+P[2]+" ist "+C[v.c-1]+".";
+      const id="Ini "+P[3]+" saya. Dia "+GI[v.g-1]+" dan "+AI[v.a-1]+". Dia "+CI[v.c-1]+".";
+      return {html:'<div style="font-size:'+(36+v.g*22)+'px;line-height:1.1" aria-hidden="true">'+P[4]+'</div><p style="font-size:1.15em;font-weight:700">'+de+' <button type="button" class="say" data-say="'+de+'" aria-label="Dengarkan kalimat">🔊</button></p><p class="muted">'+id+'</p>', persen:0};
+    },
+    tugas:[
+      { tipe:"pg", t:"Mengapa bengkel menulis „meine Mutter“, bukan „mein Mutter“?", opsi:["Mutter berartikel die (feminin), jadi memakai meine","Mutter adalah bentuk jamak","Mutter berartikel das (netral)"], kunci:0, jelas:"Kata feminin memakai meine/eine; maskulin dan netral memakai mein/ein.", petunjuk:"Cek artikel Mutter di kartu materi." },
+      { tipe:"pg", t:"Pilih Person 3 (Bruder) dengan Größe 1. Kalimat yang benar?", opsi:["Er ist klein.","Sie ist klein.","Er sind klein."], kunci:0, jelas:"Bruder laki-laki: er, dan sein menjadi ist.", petunjuk:"Bruder = laki-laki, subjek tunggal." }
+    ] },
+  game:[
+    { tipe:"memori", judul:"Pasangan Kata Keluarga", pasang:[["der Vater","ayah"],["die Schwester","saudara perempuan"],["der Onkel","paman"],["die Tante","bibi"]] },
+    { tipe:"kelompok", judul:"Der, Die, atau Das?", t:"Ketuk kata, lalu ketuk keranjang artikelnya.", keranjang:["der","die","das"], item:[["Vater",0],["Mutter",1],["Kind",2],["Bruder",0],["Schwester",1],["Mädchen",2]], jelas:"Vater dan Bruder maskulin (der), Mutter dan Schwester feminin (die), Kind dan Mädchen netral (das)." }
+  ],
+  lkpd:[
+    { tipe:"urut", t:"Susun dialog perkenalan yang runtut.", item:["Hallo! Ich heiße Anna.","Freut mich, Anna. Ich bin Tom. Woher kommst du?","Ich komme aus Indonesien. Und du?","Ich komme aus Deutschland. Tschüs!"], jelas:"Dialog dimulai salam, saling menyebut nama, bertanya asal, lalu perpisahan.", petunjuk:"Mulai dari salam pembuka." },
+    { tipe:"isian", t:"Lengkapi: ___ alt bist du? – Ich bin 16 Jahre alt.", kunci:["wie"], jelas:"Wie alt = berapa umur.", petunjuk:"Kata tanya untuk „bagaimana/berapa“." },
+    { tipe:"pg", t:"Pilih artikel yang benar: ___ Schwester ist nett.", opsi:["Die","Der","Das"], kunci:0, jelas:"die Schwester (feminin).", petunjuk:"Schwester = saudara perempuan." },
+    { tipe:"bs", t:"„Ein Mutter“ adalah bentuk yang benar untuk „seorang ibu“.", kunci:false, jelas:"Salah. Mutter feminin, jadi eine Mutter.", petunjuk:"Feminin memakai eine." },
+    { tipe:"isian", t:"Stammbaum: Opa Karl dan Oma Eva punya anak Jan. Jan punya anak Lena. Lena adalah … dari Karl. (cucu perempuan, satu kata Jerman)", kunci:["enkelin","die enkelin"], jelas:"Lena adalah die Enkelin (cucu perempuan) dari Karl.", petunjuk:"Enkel = cucu; tambahkan -in untuk perempuan." }
+  ],
+  kuis:{ jumlah:8, bank:[
+    { level:1, tp:"TP4", tipe:"pg", t:"___ ist das? – Das ist mein Bruder.", opsi:["Wer","Was","Wo"], kunci:0, jelas:"Orang ditanyakan dengan Wer.", petunjuk:"Bruder adalah orang.", penguatan:"Wer untuk orang, Was untuk benda." },
+    { level:1, tp:"TP1", tipe:"pg", t:"Arti die Großmutter adalah …", opsi:["nenek","kakek","bibi"], kunci:0, jelas:"Groß = besar, Mutter = ibu, jadi ibu dari orang tua: nenek.", petunjuk:"Jangan tertukar dengan Großvater.", penguatan:"Großmutter = Oma, Großvater = Opa." },
+    { level:1, tp:"TP4", tipe:"pg", t:"___ Vater ist nett.", opsi:["Der","Die","Das"], kunci:0, jelas:"der Vater (maskulin).", petunjuk:"Vater laki-laki.", penguatan:"Maskulin: der/ein, feminin: die/eine, netral: das/ein." },
+    { level:1, tp:"TP3", tipe:"pg", t:"Ich ___ Lukas.", opsi:["heiße","heißt","heißen"], kunci:0, jelas:"Subjek ich memakai akhiran -e: ich heiße.", petunjuk:"Ich + akhiran -e.", penguatan:"ich heiße, du heißt, er/sie heißt." },
+    { level:2, tp:"TP2", tipe:"pg", t:"Teks: <i>Das ist Maria. Sie ist 15 Jahre alt und kommt aus Berlin. Sie ist klein und sehr nett. Ihr Bruder heißt Tim.</i><br>Wie ist Maria?", opsi:["klein und nett","groß und alt","jung und streng"], kunci:0, jelas:"Teks menyebut „klein und sehr nett“.", petunjuk:"Cari kalimat dengan Sie ist … .", penguatan:"Baca kalimat deskripsi dan cari kata sifatnya." },
+    { level:2, tp:"TP2", tipe:"isian", t:"Teks: <i>Das ist Maria. Sie ist 15 Jahre alt. Ihr Bruder heißt Tim.</i><br>Wie heißt Marias Bruder?", kunci:["tim"], jelas:"Teks menyebut: Ihr Bruder heißt Tim.", petunjuk:"Cari kata Bruder di teks.", penguatan:"Untuk informasi rinci, tunjuk kalimat yang memuat jawabannya." },
+    { level:2, tp:"TP4", tipe:"pg", t:"Pilih artikel tak tentu: ___ Schwester (seorang saudara perempuan).", opsi:["eine","ein","einen"], kunci:0, jelas:"die Schwester feminin, jadi eine Schwester.", petunjuk:"Feminin memakai -e.", penguatan:"eine untuk feminin, ein untuk maskulin dan netral." },
+    { level:2, tp:"TP3", tipe:"pg", t:"Meine Eltern ___ nett.", opsi:["sind","ist","bin"], kunci:0, jelas:"Eltern jamak, jadi sind.", petunjuk:"Eltern berarti orang tua (lebih dari satu).", penguatan:"sie (jamak) → sind." },
+    { level:3, tp:"TP1", tipe:"isian", t:"Mein Vater hat einen Bruder. Er ist mein ___. (paman, satu kata Jerman)", kunci:["onkel"], jelas:"Saudara laki-laki ayah adalah der Onkel.", petunjuk:"Paman = Onkel; bibi = Tante.", penguatan:"Onkel dan Tante dibaca dari sisi orang tua." },
+    { level:3, tp:"TP4", tipe:"bs", t:"„Wer ist das?“ dipakai untuk menanyakan orang, sedangkan „Was ist das?“ untuk benda.", kunci:true, jelas:"Benar: Wer untuk orang, Was untuk benda.", petunjuk:"Pikirkan siapa versus apa.", penguatan:"Pilih Fragewort sesuai yang ditanyakan." },
+    { level:3, tp:"TP3", tipe:"pg", t:"Neneknya tua dan ramah. Kalimat Jerman yang tepat:", opsi:["Meine Oma ist alt und freundlich.","Mein Oma ist jung und freundlich.","Meine Oma sind alt und freundlich."], kunci:0, jelas:"Oma feminin (meine), subjek tunggal (ist), alt = tua.", petunjuk:"Cek meine/mein dan ist/sind.", penguatan:"Periksa tiga hal: kata ganti milik, bentuk sein, makna sifat." },
+    { level:3, tp:"TP2", tipe:"pg", t:"Teks: <i>Ich habe zwei Geschwister. Mein Bruder Paul ist groß, meine Schwester Lisa ist klein.</i> Wie viele Geschwister hat der Sprecher?", opsi:["zwei","eins","drei"], kunci:0, jelas:"Zwei Geschwister = dua saudara kandung: Paul dan Lisa.", petunjuk:"zwei = dua; hitung nama yang disebut.", penguatan:"Gabungkan angka di teks dengan nama yang disebut." }
+  ] },
+  refleksi:[
+    { t:"Seberapa percaya diri kamu memperkenalkan diri dalam bahasa Jerman?", tipe:"emoji" },
+    { t:"Schreiben: tulis 2–3 kalimat Jerman tentang satu anggota keluargamu (Das ist … Er/Sie ist … ).", tipe:"teks" },
+    { t:"Sprechen: ucapkan kalimatmu ke teman sebangku. Bagian mana yang masih sulit dilafalkan atau disusun?", tipe:"teks" }
+  ],
+  badge:[
+    { id:"jelajah", ikon:"🗣️", nama:"Gesprächspartner", syarat:"Selesaikan Materi dan Eksplorasi", cek:S=>!!(S.done.materi&&S.done.eksplorasi) },
+    { id:"werkstatt", ikon:"🌳", nama:"Stammbaum-Meister", syarat:"Selesaikan Stammbaum-Werkstatt", cek:S=>!!S.done.lab },
+    { id:"wort", ikon:"🎴", nama:"Wortschatz-Profi", syarat:"Selesaikan Mini Game", cek:S=>!!S.done.game },
+    { id:"pantang", ikon:"💪", nama:"Pantang Menyerah", syarat:"Benar setelah sempat salah", cek:S=>S.pantang },
+    { id:"kritis", ikon:"🧠", nama:"Pemikir Kritis", syarat:"Jawab benar soal Level 3", cek:S=>S.l3 },
+    { id:"juara", ikon:"🏆", nama:"Juara Kuis", syarat:"Nilai kuis minimal 80", cek:S=>!!(S.hasil&&S.hasil.nilai>=80) },
+    { id:"perenung", ikon:"💡", nama:"Perenung", syarat:"Isi refleksi", cek:S=>!!S.done.refleksi }
+  ]
+};
+
+function bicara(t){try{const u=new SpeechSynthesisUtterance(t);u.lang="de-DE";u.rate=.85;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+document.addEventListener("click",e=>{const b=e.target.closest&&e.target.closest("[data-say]");if(b)bicara(b.dataset.say);});
+
+/* ===================== MESIN (umumnya tidak perlu diubah) ===================== */
+const $=(s,r=document)=>r.querySelector(s);
+const h=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;};
+const acak=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+const norm=s=>String(s).toLowerCase().replace(/\s+/g," ").trim();
+const S={done:{},poin:0,pantang:false,l3:false,quiz:null,hasil:null,refleksi:{},nama:"",aktif:"beranda"};
+
+let toastT;
+function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("on");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("on"),1400);}
+function tambahPoin(n){S.poin+=n;toast("+"+n+" ⭐");perbarui();}
+function fb(box,ok,html){let f=box.querySelector(":scope > .fb");if(!f){f=h("div","fb");box.appendChild(f);}f.className="fb "+(ok===null?"info":ok?"ok":"no");f.innerHTML=(ok===null?"💡 ":ok?"✅ ":"❌ ")+html;}
+
+/* ---- Pembangun aktivitas: pg, bs, isian, urut, jodoh, kelompok ---- */
+function buatSoal(q,onDone,opt={}){
+  const box=h("div","soal card");box.appendChild(h("p","t",q.t));
+  let tries=0,selesai=false;
+  const fin=ok=>{if(selesai)return;selesai=true;box.querySelectorAll("button,input").forEach(b=>b.disabled=true);
+    if(ok&&tries>0&&!opt.sekali)S.pantang=true;
+    if(!opt.sekali)tambahPoin(ok?(tries===0?5:2):1);
+    onDone&&onDone(ok,tries);};
+  const ketuk=(wadah,tombol)=>{wadah.appendChild(tombol);return tombol;};
+
+  if(q.tipe==="pg"||q.tipe==="bs"){
+    const opsi=q.tipe==="bs"?["Benar","Salah"]:q.opsi, kunci=q.tipe==="bs"?(q.kunci?0:1):q.kunci;
+    const idx=q.tipe==="bs"?[0,1]:acak(opsi.map((_,i)=>i)), list=h("div","opsi");
+    idx.forEach(i=>{const b=h("button","pilih");b.type="button";b.dataset.i=i;b.textContent=opsi[i];
+      b.onclick=()=>{if(selesai)return;
+        if(i===kunci){b.classList.add("benar");fb(box,true,q.jelas||"Tepat!");fin(true);}
+        else{b.classList.add("salah");b.disabled=true;tries++;
+          if(opt.sekali||tries>=2){const k=list.querySelector('[data-i="'+kunci+'"]');k&&k.classList.add("benar");
+            fb(box,false,"Jawaban yang tepat: <b>"+opsi[kunci]+"</b>. "+(q.jelas||"")+(opt.sekali&&q.petunjuk?"<br>Ingat: "+q.petunjuk:""));fin(false);}
+          else fb(box,false,q.petunjuk||"Belum tepat, coba lagi ya.");}};
+      list.appendChild(b);});
+    box.appendChild(list);
+  }
+  else if(q.tipe==="isian"){
+    const r=h("div","baris"),inp=h("input");inp.type="text";inp.placeholder="Ketik jawabanmu…";inp.setAttribute("aria-label","Jawaban");inp.style.flex="1";
+    const b=h("button","btn","Periksa");b.type="button";
+    const cek=()=>{if(selesai||!inp.value.trim())return;
+      if(q.kunci.map(norm).includes(norm(inp.value))){fb(box,true,q.jelas||"Tepat!");fin(true);}
+      else{tries++;if(opt.sekali||tries>=2){fb(box,false,"Jawaban yang tepat: <b>"+q.kunci[0]+"</b>. "+(q.jelas||"")+(opt.sekali&&q.petunjuk?"<br>Ingat: "+q.petunjuk:""));fin(false);}
+        else fb(box,false,q.petunjuk||"Belum tepat, coba periksa lagi.");}};
+    b.onclick=cek;inp.onkeydown=e=>{if(e.key==="Enter")cek();};
+    r.append(inp,b);box.appendChild(r);
+  }
+  else if(q.tipe==="urut"){
+    const pool=h("div","chips"),jwb=h("ol","urutan");let pilih=[];
+    const btns=acak(q.item.map((_,i)=>i)).map(i=>{const b=h("button","chip");b.type="button";b.textContent=q.item[i];
+      b.onclick=()=>{if(selesai||b.disabled)return;b.disabled=true;pilih.push(i);jwb.appendChild(h("li",null,"")).textContent=q.item[i];if(pilih.length===q.item.length)periksa();};
+      pool.appendChild(b);return b;});
+    const reset=h("button","btn sek","↺ Ulangi");reset.type="button";
+    reset.onclick=()=>{if(selesai)return;pilih=[];jwb.innerHTML="";btns.forEach(b=>b.disabled=false);};
+    const periksa=()=>{if(pilih.every((v,k)=>v===k)){fb(box,true,q.jelas||"Urutannya tepat!");fin(true);}
+      else{tries++;if(opt.sekali||tries>=2){jwb.innerHTML="";q.item.forEach(t=>jwb.appendChild(h("li",null,"")).textContent=t);
+        fb(box,false,"Urutan yang tepat sudah ditampilkan. "+(q.jelas||""));fin(false);}
+        else fb(box,false,(q.petunjuk||"Urutannya belum tepat.")+" Tekan Ulangi.");}};
+    box.append(pool,jwb,reset);
+  }
+  else if(q.tipe==="jodoh"){
+    const n=q.pasang.length,kiri=h("div","opsi"),kanan=h("div","opsi");let sel=null,ok=0,salah=0;
+    const KB=[];
+    q.pasang.forEach((p,i)=>{const b=h("button","pilih");b.type="button";b.textContent=p[0];
+      b.onclick=()=>{if(selesai||b.classList.contains("cocok"))return;KB.forEach(x=>x.classList.remove("pil"));sel=i;b.classList.add("pil");};KB.push(b);kiri.appendChild(b);});
+    acak(q.pasang.map((_,i)=>i)).forEach(i=>{const b=h("button","pilih");b.type="button";b.textContent=q.pasang[i][1];
+      b.onclick=()=>{if(selesai||sel===null||b.classList.contains("cocok"))return;
+        if(sel===i){b.classList.add("cocok");KB[i].classList.add("cocok");KB[i].classList.remove("pil");sel=null;ok++;
+          if(ok===n){fb(box,true,q.jelas||"Semua pasangan tepat!");tries=salah;fin(salah===0);}}
+        else{salah++;b.classList.add("goyang");setTimeout(()=>b.classList.remove("goyang"),350);fb(box,false,q.petunjuk||"Belum cocok, coba pasangan lain.");}};
+      kanan.appendChild(b);});
+    const g=h("div","dua");g.append(kiri,kanan);box.appendChild(g);
+  }
+  else if(q.tipe==="kelompok"){
+    const n=q.item.length;let sel=null,ok=0,salah=0;
+    const pool=h("div","chips"),kr=h("div","dua");const CB=[];
+    acak(q.item.map((_,i)=>i)).forEach(i=>{const b=h("button","chip");b.type="button";b.textContent=q.item[i][0];
+      b.onclick=()=>{if(selesai||b.disabled)return;CB.forEach(x=>x.classList.remove("pil"));sel={i,b};b.classList.add("pil");};CB.push(b);pool.appendChild(b);});
+    q.keranjang.forEach((nm,k)=>{const wrap=h("div"),b=h("button","kel");b.type="button";b.textContent=nm;const isi=h("div","chips");
+      b.onclick=()=>{if(selesai||!sel)return;
+        if(q.item[sel.i][1]===k){const c=h("span","chip cocok");c.textContent=q.item[sel.i][0];isi.appendChild(c);sel.b.remove();sel=null;ok++;
+          if(ok===n){fb(box,true,q.jelas||"Semua masuk keranjang yang tepat!");tries=salah;fin(salah===0);}}
+        else{salah++;b.classList.add("goyang");setTimeout(()=>b.classList.remove("goyang"),350);fb(box,false,"Belum tepat, pikirkan ciri benda itu.");}};
+      wrap.append(b,isi);kr.appendChild(wrap);});
+    box.append(pool,kr);
+  }
+  return box;
+}
+
+function buatMemori(g,onDone){
+  const box=h("div","card");box.appendChild(h("h3",null,g.judul));
+  const info=h("p","muted","Langkah: 0");const grid=h("div","grid-m");
+  const kartu=acak(g.pasang.flatMap((p,i)=>[{i,t:p[0]},{i,t:p[1]}]));
+  let buka=[],cocok=0,langkah=0,kunci=false;
+  kartu.forEach(k=>{const b=h("button","kartu-m","❓");b.type="button";b.setAttribute("aria-label","Kartu tertutup");
+    b.onclick=()=>{if(kunci||b.classList.contains("buka")||b.classList.contains("cocok"))return;
+      b.classList.add("buka");b.textContent=k.t;buka.push({k,b});
+      if(buka.length===2){langkah++;info.textContent="Langkah: "+langkah;
+        if(buka[0].k.i===buka[1].k.i){buka.forEach(x=>{x.b.classList.remove("buka");x.b.classList.add("cocok");});buka=[];cocok++;
+          if(cocok===g.pasang.length){fb(box,true,"Hebat! Semua pasangan ketemu dalam "+langkah+" langkah.");tambahPoin(10);onDone&&onDone(true);}}
+        else{kunci=true;setTimeout(()=>{buka.forEach(x=>{x.b.classList.remove("buka");x.b.textContent="❓";});buka=[];kunci=false;},800);}}};
+    grid.appendChild(b);});
+  box.append(info,grid);return box;
+}
+
+/* ---- Bagian-bagian halaman ---- */
+const MENU=[
+  {id:"beranda",ikon:"🏠",nama:"Beranda",r:rBeranda,selalu:false},
+  {id:"tujuan",ikon:"🎯",nama:"Tujuan",r:rTujuan,lacak:true},
+  {id:"materi",ikon:"📖",nama:"Materi",r:rMateri,lacak:true},
+  {id:"eksplorasi",ikon:"🔍",nama:"Eksplorasi",r:rEksplorasi,lacak:true},
+  {id:"lab",ikon:"🧪",nama:(DATA.lab&&DATA.lab.label)||"Laboratorium Maya",r:rLab,lacak:true},
+  {id:"game",ikon:"🎮",nama:"Mini Game",r:rGame,lacak:true},
+  {id:"lkpd",ikon:"📝",nama:"Lembar Kerja",r:rLkpd,lacak:true},
+  {id:"kuis",ikon:"🧩",nama:"Kuis Adaptif",r:rKuis,lacak:true},
+  {id:"progres",ikon:"📊",nama:"Progres",r:rProgres,selalu:true},
+  {id:"refleksi",ikon:"💡",nama:"Refleksi",r:rRefleksi,lacak:true},
+  {id:"badge",ikon:"🏆",nama:"Badge & Sertifikat",r:rBadge,selalu:true}
+];
+const cache={};
+const card=(j,teks,ik)=>{const c=h("div","card");c.appendChild(h("h2",null,(ik?ik+" ":"")+j));if(teks)c.appendChild(h("p",null,teks));return c;};
+
+function tandai(id){if(S.done[id])return;S.done[id]=true;toast("Bagian selesai ✓");perbarui();}
+function kelompokTugas(id,daftar,wadah){let n=0;daftar.forEach(q=>wadah.appendChild(buatSoal(q,()=>{n++;if(n===daftar.length)tandai(id);})));}
+
+function kartuNama(){
+  const m=DATA.meta,c=h("div","card");c.innerHTML='<h3>👤 Siapa namamu?</h3><p class="muted">Namamu akan tampil di sertifikat akhir. Kamu bisa mengubahnya kapan saja.</p>';
+  const l=h("label",null,"Nama lengkap:"),i=h("input"),ok=h("div","muted");
+  i.type="text";i.maxLength=60;i.value=S.nama;i.placeholder="Tulis namamu di sini";i.setAttribute("aria-label","Nama siswa");ok.setAttribute("aria-live","polite");
+  const sapa=()=>{const n=S.nama.trim();ok.textContent=n?"Halo, "+n+"! Namamu sudah dipakai untuk sertifikat.":"";$("#sub").textContent=m.mapel+" · "+m.jenjang+" Kelas "+m.kelas+(n?" · 👤 "+n:"");};
+  i.oninput=()=>{S.nama=i.value;sapa();};sapa();c.append(l,i,ok);return c;
+}
+function rBeranda(){const w=rBeranda0();w.insertBefore(kartuNama(),w.firstChild);return w;}
+function rBeranda0(){
+  const w=h("div"),m=DATA.meta,a=DATA.apersepsi,c=h("div","card hero");
+  c.innerHTML='<div class="big">'+a.ikon+'</div><h2></h2><p></p>';
+  c.querySelector("h2").textContent=a.pertanyaan;c.querySelector("p").textContent=a.cerita;
+  const chips=h("div");[m.mapel,m.jenjang+" Kelas "+m.kelas,m.subMateri].forEach(t=>{const s=h("span","chip-info");s.textContent=t;chips.appendChild(s);});
+  const b=h("button","btn","Mulai Belajar ▶");b.type="button";b.onclick=()=>go("tujuan");
+  c.append(chips,h("p"),b);w.appendChild(c);return w;
+}
+function rTujuan(){
+  const w=h("div"),c=card("Tujuan Belajarmu","Setelah belajar ini, kamu akan bisa:","🎯");
+  DATA.tujuan.forEach(t=>{const p=h("div","baris-p");p.innerHTML='<span style="font-size:1.6em">'+t.ikon+'</span><span class="nm"></span>';p.querySelector(".nm").textContent=t.teks;c.appendChild(p);});
+  w.appendChild(c);tandai("tujuan");return w;
+}
+function rMateri(){
+  const w=h("div");let n=0;
+  DATA.materi.forEach((m,i)=>{const c=h("div","card");c.innerHTML="<h2>"+m.ikon+" "+(i+1)+". "+m.judul+"</h2><p>"+m.isi+"</p>";
+    c.appendChild(h("p","muted","Cek pemahaman:"));
+    c.appendChild(buatSoal(m.cek,()=>{n++;if(n===DATA.materi.length)tandai("materi");}));w.appendChild(c);});
+  return w;
+}
+function rEksplorasi(){
+  const e=DATA.eksplorasi,w=h("div");w.appendChild(card(e.judul,e.instruksi,"🔍"));
+  const ks=h("div","card");ks.style.display="none";ks.innerHTML="<h3>🧭 Kesimpulan kita</h3><p></p>";ks.querySelector("p").textContent=e.kesimpulan;
+  let n=0;e.soal.forEach(q=>w.appendChild(buatSoal(q,()=>{n++;if(n===e.soal.length){ks.style.display="";tandai("eksplorasi");}})));
+  w.appendChild(ks);return w;
+}
+function rLab(){
+  const L=DATA.lab,w=h("div");w.appendChild(card(L.judul,L.instruksi,L.ikon));
+  const sim=h("div","card sim"),out=h("div","out"),bar=h("div","bar"),fill=h("i");bar.appendChild(fill);
+  const nilai={};let geser=0,tugasSelesai=0;
+  const cekSelesai=()=>{if(geser>=3&&tugasSelesai===L.tugas.length)tandai("lab");};
+  const upd=()=>{const r=L.hitung(nilai);out.innerHTML=r.html;fill.style.width=Math.max(0,Math.min(100,r.persen))+"%";};
+  L.kontrol.forEach(k=>{nilai[k.id]=k.nilai;const lab=h("label"),val=h("b");lab.append(document.createTextNode(k.label+": "),val);
+    const r=h("input");r.type="range";r.min=k.min;r.max=k.max;r.step=k.step;r.value=k.nilai;r.setAttribute("aria-label",k.label);
+    const tampil=()=>{val.textContent=nilai[k.id]+" "+(k.satuan||"");};tampil();
+    r.oninput=()=>{nilai[k.id]=+r.value;geser++;tampil();upd();cekSelesai();};sim.append(lab,r);});
+  sim.append(out,bar);upd();w.appendChild(sim);
+  w.appendChild(h("h3",null,"Tantangan"));
+  L.tugas.forEach(q=>w.appendChild(buatSoal(q,()=>{tugasSelesai++;cekSelesai();})));
+  return w;
+}
+function rGame(){
+  const w=h("div");let n=0;const tot=DATA.game.length;const sel=()=>{n++;if(n===tot)tandai("game");};
+  DATA.game.forEach(g=>{if(g.tipe==="memori")w.appendChild(buatMemori(g,sel));
+    else{const c=h("div","card");c.appendChild(h("h3",null,g.judul));w.appendChild(c);const s=buatSoal(g,sel);s.style.cssText="border:0;box-shadow:none;margin:0;padding:0";s.firstChild.style.display="none";const p=h("p",null,"");p.textContent=g.t;c.append(p,s);}});
+  return w;
+}
+function rLkpd(){
+  const w=h("div");w.appendChild(card("Lembar Kerja Interaktif","Kerjakan tugas berikut satu per satu. Boleh mencoba lagi bila belum tepat.","📝"));
+  kelompokTugas("lkpd",DATA.lkpd,w);return w;
+}
+
+/* ---- Kuis adaptif: benar naik level, salah turun level, 2 salah beruntun = kartu penguatan ---- */
+const BOBOT={1:10,2:15,3:20};
+function rKuis(){
+  const w=h("div");
+  if(S.hasil){hasilKuis(w);return w;}
+  const c=card("Kuis Adaptif","Soal berikutnya menyesuaikan jawabanmu: benar naik level, salah turun level. Tenang, kamu pasti bisa!","🧩");
+  const b=h("button","btn","Mulai Kuis");b.type="button";c.appendChild(b);w.appendChild(c);
+  b.onclick=()=>{const bank=DATA.kuis.bank;
+    S.quiz={level:2,dipakai:new Set(),no:0,total:Math.min(DATA.kuis.jumlah||8,bank.length),skor:0,maks:0,beruntun:0,benar:0,perTp:{},lvlMaks:2};
+    w.innerHTML="";soalBerikut(w);};
+  return w;
+}
+function pilihSoal(Q){
+  const bank=DATA.kuis.bank;
+  for(const d of [0,1,-1,2,-2]){const l=Q.level+d;if(l<1||l>3)continue;
+    const c=bank.map((q,i)=>({q,i})).filter(x=>x.q.level===l&&!Q.dipakai.has(x.i));
+    if(c.length){const p=c[Math.floor(Math.random()*c.length)];Q.dipakai.add(p.i);return p.q;}}
+  return null;
+}
+function soalBerikut(w){
+  const Q=S.quiz;if(Q.no>=Q.total){return selesaiKuis(w);}
+  const q=pilihSoal(Q);if(!q){return selesaiKuis(w);}
+  Q.no++;w.innerHTML="";
+  const top=h("div","card baris");top.innerHTML='<b>Soal '+Q.no+' / '+Q.total+'</b><span class="chip-info">Level '+q.level+'</span><span class="muted" style="margin-left:auto">Poin: '+Q.skor+'</span>';
+  const bar=h("div","bar");bar.innerHTML='<i style="width:'+((Q.no-1)/Q.total*100)+'%"></i>';top.style.flexWrap="wrap";top.appendChild(bar);bar.style.flexBasis="100%";
+  w.appendChild(top);
+  const s=buatSoal(q,ok=>{
+    Q.maks+=BOBOT[q.level];const t=Q.perTp[q.tp||"Umum"]||(Q.perTp[q.tp||"Umum"]={b:0,n:0});t.n++;
+    if(ok){Q.skor+=BOBOT[q.level];Q.benar++;t.b++;Q.beruntun=0;if(q.level===3)S.l3=true;Q.level=Math.min(3,Q.level+1);Q.lvlMaks=Math.max(Q.lvlMaks,Q.level);}
+    else{Q.beruntun++;Q.level=Math.max(1,Q.level-1);}
+    if(!ok&&Q.beruntun>=2){const k=h("div","card");k.innerHTML="<h3>📌 Kartu Penguatan</h3><p></p>";k.querySelector("p").textContent=q.penguatan||q.jelas||"";w.appendChild(k);Q.beruntun=0;}
+    const nb=h("button","btn",Q.no>=Q.total?"Lihat Hasil ▶":"Soal Berikutnya ▶");nb.type="button";nb.onclick=()=>soalBerikut(w);w.appendChild(nb);
+  },{sekali:true});
+  w.appendChild(s);
+}
+function selesaiKuis(w){
+  const Q=S.quiz;S.hasil={nilai:Q.maks?Math.round(Q.skor/Q.maks*100):0,benar:Q.benar,total:Q.no,lvlMaks:Q.lvlMaks,perTp:Q.perTp,skor:Q.skor};
+  tandai("kuis");tambahPoin(Math.round(Q.skor/2));w.innerHTML="";hasilKuis(w);
+}
+function hasilKuis(w){
+  const H=S.hasil,c=h("div","card hero");
+  const medal=H.nilai>=80?"🏆":H.nilai>=60?"🥈":"🌱";
+  c.innerHTML='<div class="big">'+medal+'</div><h2>Nilai kuismu: '+H.nilai+'</h2><p>Benar '+H.benar+' dari '+H.total+' soal. Level tertinggi yang kamu capai: '+H.lvlMaks+'.</p>';
+  const lemah=Object.entries(H.perTp).filter(([,v])=>v.b/v.n<0.67).map(([k])=>k);
+  c.appendChild(h("p",null,lemah.length?"Perlu diulang: <b>"+lemah.join(", ")+"</b>. Buka lagi Materi atau Laboratorium lalu coba kuis lagi.":"Semua tujuan sudah kuat. Keren!"));
+  const ul=h("button","btn sek","Ulangi Kuis");ul.type="button";ul.onclick=()=>{S.hasil=null;S.quiz=null;delete cache.kuis;go("kuis");};
+  const lanjut=h("button","btn","Lanjut ke Refleksi ▶");lanjut.type="button";lanjut.onclick=()=>go("refleksi");
+  const r=h("div","baris");r.style.justifyContent="center";r.append(ul,lanjut);c.appendChild(r);w.appendChild(c);
+}
+function rProgres(){
+  const w=h("div"),c=card("Progres Belajarmu",null,"📊");
+  MENU.filter(m=>m.lacak).forEach(m=>{const p=h("div","baris-p");p.innerHTML='<span>'+m.ikon+'</span><span class="nm"></span><span>'+(S.done[m.id]?"✅ Selesai":"⬜ Belum")+"</span>";
+    p.querySelector(".nm").textContent=m.nama;const b=h("button","btn sek","Buka");b.type="button";b.style.padding="4px 14px";b.style.minHeight="44px";b.onclick=()=>go(m.id);p.appendChild(b);c.appendChild(p);});
+  w.appendChild(c);
+  const t=h("div","card");t.innerHTML="<h3>🎯 Penguasaan tiap tujuan</h3>";
+  if(!S.hasil)t.appendChild(h("p","muted","Selesaikan kuis untuk melihat peta penguasaanmu."));
+  else{DATA.tujuan.forEach(tj=>{const v=S.hasil.perTp[tj.tp];const persen=v?Math.round(v.b/v.n*100):null;
+    const p=h("div");p.style.margin="10px 0";const lb=h("div","baris");lb.style.justifyContent="space-between";
+    const nm=h("span");nm.textContent=tj.tp+": "+tj.teks;const st=h("b",null,persen===null?"belum diuji":persen>=67?"Kuat 💪":"Perlu diulang 🔁");lb.append(nm,st);
+    const bar=h("div","bar");bar.innerHTML='<i style="width:'+(persen||0)+'%"></i>';p.append(lb,bar);t.appendChild(p);});}
+  w.appendChild(t);return w;
+}
+function rRefleksi(){
+  const w=h("div");w.appendChild(card("Refleksi","Luangkan waktu sejenak untuk merenungkan belajarmu.","💡"));
+  const C=h("div","card");
+  DATA.refleksi.forEach((r,i)=>{const q=h("div");q.style.margin="14px 0";const lb=h("p","t");lb.style.fontWeight="600";lb.textContent=r.t;q.appendChild(lb);
+    if(r.tipe==="emoji"){const e=h("div","emo");["😕","🙂","😀","🤩"].forEach((em,k)=>{const b=h("button",null,em);b.type="button";b.setAttribute("aria-label","Pilihan "+(k+1)+" dari 4");
+      b.onclick=()=>{S.refleksi[i]=k+1;e.querySelectorAll("button").forEach(x=>x.classList.remove("pil"));b.classList.add("pil");};e.appendChild(b);});q.appendChild(e);}
+    else{const t=h("textarea");t.rows=3;t.setAttribute("aria-label",r.t);t.oninput=()=>{S.refleksi[i]=t.value.trim();};q.appendChild(t);}
+    C.appendChild(q);});
+  const b=h("button","btn","Simpan Refleksi");b.type="button";
+  b.onclick=()=>{const lengkap=DATA.refleksi.every((r,i)=>r.tipe==="emoji"?S.refleksi[i]:(S.refleksi[i]||"").length>=5);
+    if(!lengkap){toast("Lengkapi dulu semua isian ya");return;}
+    if(!S.done.refleksi){tandai("refleksi");tambahPoin(10);}fb(C,true,"Terima kasih sudah berefleksi! Lihat badge-mu di bagian terakhir.");};
+  C.appendChild(b);w.appendChild(C);return w;
+}
+function rBadge(){
+  const w=h("div"),c=card("Badge & Sertifikat",null,"🏆");const g=h("div","lencana-grid");
+  let dapat=0;DATA.badge.forEach(b=>{const ok=!!b.cek(S);if(ok)dapat++;const d=h("div","lencana"+(ok?" dapat":""));
+    d.innerHTML='<span class="ik">'+b.ikon+'</span><b></b><div class="muted" style="font-size:.8em"></div>';d.querySelector("b").textContent=b.nama;d.querySelector(".muted").textContent=ok?"Diperoleh!":b.syarat;g.appendChild(d);});
+  c.appendChild(g);w.appendChild(c);
+  const s=h("div","card");
+  if(!S.hasil){s.innerHTML="<h3>📜 Sertifikat</h3><p class='muted'>Selesaikan kuis untuk membuka sertifikatmu.</p>";}
+  else{const lb=h("label",null,"Tulis namamu untuk sertifikat:");const inp=h("input");inp.type="text";inp.value=S.nama;inp.maxLength=60;inp.setAttribute("aria-label","Nama siswa");
+    const sert=h("div","sert");sert.innerHTML='<div style="font-size:2.4em">🎓</div><b>SERTIFIKAT APRESIASI</b><p class="muted">diberikan kepada</p><div class="nm"></div><p></p><p class="muted"></p>';
+    const nm=sert.querySelector(".nm"),ps=sert.querySelectorAll("p");nm.textContent=S.nama||"(namamu)";
+    ps[1].textContent="telah menyelesaikan pembelajaran “"+DATA.meta.judul+"” dengan nilai kuis "+S.hasil.nilai+" dan memperoleh "+dapat+" badge.";
+    ps[2].textContent=new Date().toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+    inp.oninput=()=>{S.nama=inp.value;nm.textContent=S.nama||"(namamu)";const sb=$("#sub");if(sb)sb.textContent=DATA.meta.mapel+" · "+DATA.meta.jenjang+" Kelas "+DATA.meta.kelas+(S.nama.trim()?" · 👤 "+S.nama.trim():"");};
+    const pr=h("button","btn noprint","🖨️ Cetak / Simpan PDF");pr.type="button";pr.onclick=()=>{if(!S.nama.trim()){inp.placeholder="Isi namamu dulu";inp.focus();return;}window.print();};pr.style.marginTop="10px";
+    s.innerHTML="<h3>📜 Sertifikat</h3>";s.append(lb,inp,h("p"),sert,pr);}
+  w.appendChild(s);return w;
+}
+
+/* ---- Navigasi ---- */
+function perbarui(){
+  $("#poin").textContent="⭐ "+S.poin;
+  const L=MENU.filter(m=>m.lacak),n=L.filter(m=>S.done[m.id]).length,p=Math.round(n/L.length*100);
+  $("#pbar").style.width=p+"%";$("#pbar").parentNode.setAttribute("aria-valuenow",p);
+  document.querySelectorAll("#nav button").forEach(b=>{b.classList.toggle("done",!!S.done[b.dataset.id]);b.setAttribute("aria-current",b.dataset.id===S.aktif);});
+}
+function go(id){
+  const m=MENU.find(x=>x.id===id);if(!m)return;S.aktif=id;
+  const main=$("#main");main.innerHTML="";
+  const el=m.selalu||!cache[id]?m.r():cache[id];if(!m.selalu)cache[id]=el;
+  main.appendChild(el);
+  const i=MENU.indexOf(m),pg=$("#pager");pg.innerHTML="";
+  const prev=h("button","btn sek","◀ Sebelumnya"),next=h("button","btn","Berikutnya ▶");prev.type=next.type="button";
+  prev.disabled=i===0;next.disabled=i===MENU.length-1;prev.onclick=()=>go(MENU[i-1].id);next.onclick=()=>go(MENU[i+1].id);
+  pg.append(prev,next);perbarui();main.focus({preventScroll:true});window.scrollTo({top:0,behavior:"smooth"});
+  const nb=document.querySelector('#nav button[data-id="'+id+'"]');nb&&nb.scrollIntoView({inline:"center",block:"nearest"});
+}
+(function init(){
+  const m=DATA.meta;document.body.dataset.tema=m.tema||"smp";document.title=m.judul;
+  $("#mas").textContent=m.maskot||"🦉";$("#jdl").firstChild.textContent=m.judul;$("#sub").textContent=m.mapel+" · "+m.jenjang+" Kelas "+m.kelas;
+  const nav=$("#nav");MENU.forEach(x=>{const b=h("button");b.type="button";b.dataset.id=x.id;b.textContent=x.ikon+" "+x.nama;b.onclick=()=>go(x.id);nav.appendChild(b);});
+  go("beranda");
+})();
+</script>
+</body>
+</html>
